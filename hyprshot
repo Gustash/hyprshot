@@ -17,7 +17,7 @@ Examples:
 
 Options:
   -h, --help                show help message
-  -m, --mode                one of: output, window, region, active, OUTPUT_NAME
+  -m, --mode                one of: all, output, window, region, active, OUTPUT_NAME
   -o, --output-folder       directory in which to save screenshot
   -f, --filename            the file name of the resulting screenshot
   -D, --delay               how long to delay taking the screenshot after selection (seconds)
@@ -30,6 +30,7 @@ Options:
   -- [command]              open screenshot with a command of your choosing. e.g. hyprshot -m window -- mirage
 
 Modes:
+  all           take screenshot of all monitors
   output        take screenshot of an entire monitor
   window        take screenshot of an open window
   region        take screenshot of selected region
@@ -106,25 +107,36 @@ function trim() {
     echo ${cropped}
 }
 
+function run_grim() {
+    local output="${1}"
+    local geometry="${2}"
+
+    if [ -z "${geometry}" ]; then
+        grim "${output}"
+    else
+        grim -g "${geometry}" "${output}"
+    fi
+}
+
 function save_geometry() {
     local geometry="${1}"
     local output=""
 
     if [ $RAW -eq 1 ]; then
-        grim -g "${geometry}" -
+        run_grim - "${geometry}"
         return 0
     fi
 
     if [ $CLIPBOARD -eq 0 ]; then
         mkdir -p "$SAVEDIR"
-        grim -g "${geometry}" "$SAVE_FULLPATH"
+        run_grim "$SAVE_FULLPATH" "${geometry}"
         output="$SAVE_FULLPATH"
         wl-copy --type image/png < "$output"
         [ -z "$COMMAND" ] || {
             "$COMMAND" "$output"
         }
     else
-        wl-copy --type image/png < <(grim -g "${geometry}" -)
+        wl-copy --type image/png < <(run_grim - "${geometry}")
     fi
 
     send_notification $output
@@ -166,7 +178,10 @@ function begin_grab() {
             else
                 local geometry=`grab_window`
             fi
-	    geometry=`trim "${geometry}"`
+            geometry=`trim "${geometry}"`
+            ;;
+        all)
+            geometry=""
             ;;
     esac
     if [ ${DELAY} -gt 0 ] 2>/dev/null; then
@@ -222,7 +237,7 @@ function parse_mode() {
     local mode="${1}"
 
     case $mode in
-        window | region | output)
+        window | region | output | all)
             OPTION=$mode
             ;;
         active)
@@ -289,7 +304,7 @@ function args() {
     done
 
     if [ -z $OPTION ]; then
-        Print "A mode is required\n\nAvailable modes are:\n\toutput\n\tregion\n\twindow\n"
+        Print "A mode is required\n\nAvailable modes are:\n\tall\n\toutput\n\tregion\n\twindow\n"
         exit 2
     fi
 }
