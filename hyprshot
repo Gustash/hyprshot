@@ -27,6 +27,9 @@ Options:
   -r, --raw                 output raw image data to stdout
   -t, --notif-timeout       notification timeout in milliseconds (default 5000)
   --clipboard-only          copy screenshot to clipboard and don't save image in disk
+  --border-width            width of the selection border in pixels (default 2)
+  --border-color            color of the selection border (default #000000ff)
+  --background-color        color around the selection (default #ffffff88)
   -- [command]              open screenshot with a command of your choosing. e.g. hyprshot -m window -- mirage
 
 Modes:
@@ -45,8 +48,8 @@ function Print() {
     if [ $DEBUG -eq 0 ]; then
         return 0
     fi
-    
-    1>&2 printf "$@" 
+
+    1>&2 printf "$@"
 }
 
 function send_notification() {
@@ -176,7 +179,7 @@ function begin_grab() {
 }
 
 function grab_output() {
-    slurp -or
+    slurp -or -b $BACKGROUND_COLOR -c $BORDER_COLOR -w $BORDER_WIDTH
 }
 
 function grab_active_output() {
@@ -196,7 +199,7 @@ function grab_selected_output() {
 }
 
 function grab_region() {
-    slurp -d
+    slurp -d -b  $BACKGROUND_COLOR -c $BORDER_COLOR -w $BORDER_WIDTH
 }
 
 function grab_window() {
@@ -208,7 +211,7 @@ function grab_window() {
     # through stdin
     local boxes="$(echo $clients | jq -r '.[] | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1]) \(.title)"' | cut -f1,2 -d' ')"
     Print "Boxes:\n%s\n" "$boxes"
-    slurp -r <<< "$boxes"
+    slurp -r -b $BACKGROUND_COLOR -c $BORDER_COLOR -w $BORDER_WIDTH <<< "$boxes"
 }
 
 function grab_active_window() {
@@ -236,7 +239,7 @@ function parse_mode() {
 }
 
 function args() {
-    local options=$(getopt -o hf:o:m:D:dszr:t: --long help,filename:,output-folder:,mode:,delay:,clipboard-only,debug,silent,freeze,raw,notif-timeout: -- "$@")
+    local options=$(getopt -o hf:o:m:D:dszr:t: --long help,filename:,output-folder:,mode:,delay:,clipboard-only,debug,silent,freeze,raw,notif-timeout:,border-color:,background-color:,border-width: -- "$@")
     eval set -- "$options"
 
     while true; do
@@ -280,6 +283,18 @@ function args() {
                 shift;
                 NOTIF_TIMEOUT=$1
                 ;;
+            --border-color)
+                shift;
+                BORDER_COLOR=$1
+                ;;
+            --background-color)
+                shift;
+                BACKGROUND_COLOR=$1
+                ;;
+            --border-width)
+                shift;
+                BORDER_WIDTH=$1
+                ;;
             --)
                 shift # Skip -- argument
                 COMMAND=${@:2}
@@ -306,6 +321,10 @@ RAW=0
 NOTIF_TIMEOUT=5000
 CURRENT=0
 FREEZE=0
+BORDER_COLOR=\#000000ff
+BACKGROUND_COLOR=\#ffffff88
+BORDER_WIDTH=2
+
 [ -z "$XDG_PICTURES_DIR" ] && type xdg-user-dir &> /dev/null && XDG_PICTURES_DIR=$(xdg-user-dir PICTURES)
 FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprshot.png')"
 [ -z "$HYPRSHOT_DIR" ] && SAVEDIR=${XDG_PICTURES_DIR:=~} || SAVEDIR=${HYPRSHOT_DIR}
