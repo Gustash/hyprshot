@@ -28,6 +28,12 @@ Activate wayland overlay as described in [README](https://github.com/bsd-ac/wayl
 # emerge --ask gui-apps/hyprshot
 ```
 
+### Fedora
+As of Fedora 40:
+```bash
+# sudo dnf install hyprshot
+```
+
 ### Dependencies
 
 - hyprland (this one should be obvious)
