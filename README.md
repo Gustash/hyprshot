@@ -32,7 +32,7 @@ Activate wayland overlay as described in [README](https://github.com/bsd-ac/wayl
 
 - hyprland (this one should be obvious)
 - jq (to parse and manipulate json)
-- grim (to take the screenshot)
+- wayshot (to take the screenshot)
 - slurp (to select what to screenshot)
 - wl-clipboard (to copy screenshot to clipboard)
 - libnotify (to get notified when a screenshot is saved)

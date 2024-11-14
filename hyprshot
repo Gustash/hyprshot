@@ -111,20 +111,20 @@ function save_geometry() {
     local output=""
 
     if [ $RAW -eq 1 ]; then
-        grim -g "${geometry}" -
+        wayshot -s "${geometry}" --stdout
         return 0
     fi
 
     if [ $CLIPBOARD -eq 0 ]; then
         mkdir -p "$SAVEDIR"
-        grim -g "${geometry}" "$SAVE_FULLPATH"
+        wayshot -s "${geometry}" -f "$SAVE_FULLPATH"
         output="$SAVE_FULLPATH"
         wl-copy --type image/png < "$output"
         [ -z "$COMMAND" ] || {
             "$COMMAND" "$output"
         }
     else
-        wl-copy --type image/png < <(grim -g "${geometry}" -)
+        wl-copy --type image/png < <(wayshot -s "${geometry}" --stdout)
     fi
 
     send_notification $output
