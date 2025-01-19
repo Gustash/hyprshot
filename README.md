@@ -82,6 +82,11 @@ You can add the various modes as keybindings in your Hyprland config like so:
 
 ...
 
+# Save location - OPTIONAL
+env = HYPRSHOT_DIR,/home/username/screenshots  
+
+...
+
 # Screenshot a window
 bind = $mainMod, PRINT, exec, hyprshot -m window
 # Screenshot a monitor
